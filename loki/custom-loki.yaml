@@ -1,0 +1,147 @@
+schema_config:
+  configs:
+  - store: aws
+    object_store: s3
+    schema: v11
+    index:
+      prefix: index_
+      period: 24h
+      tags: {}
+storage_config:
+  aws:
+    s3: s3://eu-central-1
+    bucketnames: loki-noa-cluster-dev
+    dynamodb:
+      dynamodb_url: dynamodb://eu-central-1
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::510983726938:role/LokiRole"
+serviceMonitor:
+  # -- If enabled, ServiceMonitor resources for Prometheus Operator are created
+  enabled: true
+  # -- Alternative namespace for ServiceMonitor resources
+  namespace: null
+  # -- Namespace selector for ServiceMonitor resources
+  namespaceSelector: {}
+  # -- ServiceMonitor annotations
+  annotations: {}
+  # -- Additional ServiceMonitor labels
+  nodeSelector:
+    node: monitoring
+  # -- Tolerations for write pods
+  tolerations: []
+
+# Configuration for the write
+write:
+  # -- Number of replicas for the write
+  replicas: 3
+  image:
+    # -- The Docker registry for the write image. Overrides `loki.image.registry`
+    registry: null
+    # -- Docker image repository for the write image. Overrides `loki.image.repository`
+    repository: null
+    # -- Docker image tag for the write image. Overrides `loki.image.tag`
+    tag: null
+  # -- The name of the PriorityClass for write pods
+  priorityClassName: null
+  # -- Annotations for write pods
+  podAnnotations: {}
+  # -- Additional selector labels for each `write` pod
+  selectorLabels: {}
+  # -- Labels for ingestor service
+  serviceLabels: {}
+  # -- Comma-separated list of Loki modules to load for the write
+  targetModule: "write"
+  # -- Additional CLI args for the write
+  extraArgs: []
+  # -- Environment variables to add to the write pods
+  extraEnv: []
+  # -- Environment variables from secrets or configmaps to add to the write pods
+  extraEnvFrom: []
+  # -- Volume mounts to add to the write pods
+  extraVolumeMounts: []
+  # -- Volumes to add to the write pods
+  extraVolumes: []
+  # -- Resource requests and limits for the write
+  resources: {}
+  # -- Grace period to allow the write to shutdown before it is killed. Especially for the ingestor,
+  # this must be increased. It must be long enough so writes can be gracefully shutdown flushing/transferring
+  # all data and to successfully leave the member ring on shutdown.
+  terminationGracePeriodSeconds: 300
+  # -- Affinity for write pods. Passed through `tpl` and, thus, to be configured as string
+  # @default -- Hard node and soft zone anti-affinity
+  nodeSelector: {}
+  # -- Tolerations for write pods
+  tolerations: []
+  persistence:
+    # -- Size of persistent disk
+    size: 10Gi
+    # -- Storage class to be used.
+    # If defined, storageClassName: <storageClass>.
+    # If set to "-", storageClassName: "", which disables dynamic provisioning.
+    # If empty or set to null, no storageClassName spec is
+    # set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS, and OpenStack).
+    storageClassName: ebs
+    # -- Selector for persistent disk
+    #selector: ebs
+# Configuration for the read node(s)
+read:
+  # -- Number of replicas for the read
+  replicas: 3
+  autoscaling:
+    # -- Enable autoscaling for the read, this is only used if `queryIndex.enabled: true`
+    enabled: false
+    # -- Minimum autoscaling replicas for the read
+    minReplicas: 1
+    # -- Maximum autoscaling replicas for the read
+    maxReplicas: 3
+    # -- Target CPU utilisation percentage for the read
+    targetCPUUtilizationPercentage: 60
+    # -- Target memory utilisation percentage for the read
+    targetMemoryUtilizationPercentage:
+  image:
+    # -- The Docker registry for the read image. Overrides `loki.image.registry`
+    registry: null
+    # -- Docker image repository for the read image. Overrides `loki.image.repository`
+    repository: null
+    # -- Docker image tag for the read image. Overrides `loki.image.tag`
+    tag: null
+  # -- The name of the PriorityClass for read pods
+  priorityClassName: null
+  # -- Annotations for read pods
+  podAnnotations: {}
+  # -- Additional selecto labels for each `read` pod
+  selectorLabels: {}
+  # -- Labels for read service
+  serviceLabels: {}
+  # -- Comma-separated list of Loki modules to load for the read
+  targetModule: "read"
+  # -- Additional CLI args for the read
+  extraArgs: []
+  # -- Environment variables to add to the read pods
+  extraEnv: []
+  # -- Environment variables from secrets or configmaps to add to the read pods
+  extraEnvFrom: []
+  # -- Volume mounts to add to the read pods
+  extraVolumeMounts: []
+  # -- Volumes to add to the read pods
+  extraVolumes: []
+  # -- Resource requests and limits for the read
+  resources: {}
+  # -- Grace period to allow the read to shutdown before it is killed
+  terminationGracePeriodSeconds: 30
+  # -- Node selector for read pods
+  nodeSelector: {}
+  # -- Tolerations for read pods
+  tolerations: []
+  persistence:
+    # -- Size of persistent disk
+    size: 10Gi
+    # -- Storage class to be used.
+    # If defined, storageClassName: <storageClass>.
+    # If set to "-", storageClassName: "", which disables dynamic provisioning.
+    # If empty or set to null, no storageClassName spec is
+    # set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS, and OpenStack).
+    storageClassName: ebs
+    # -- Selector for persistent disk
+    #selector: ebs
